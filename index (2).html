@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumière Beauty &amp; Wellness — Attrition Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#0F1B1E;
+    --panel:#14262A;
+    --panel-2:#1B3136;
+    --line:#274044;
+    --rose:#E08B5E;
+    --rose-dim:#8F5A3B;
+    --sage:#5FB3A3;
+    --sage-dim:#3B6D63;
+    --gold:#E7C15C;
+    --gold-dim:#8E7332;
+    --ink:#EAF3F1;
+    --ink-2:#A9C4C1;
+    --ink-3:#6F8F8B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    padding:28px;
+  }
+  .wrap{max-width:1280px;margin:0 auto;}
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--line);
+    padding-bottom:18px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .masthead h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:28px;
+    margin:0 0 4px 0;
+    letter-spacing:0.2px;
+  }
+  .masthead p{
+    margin:0;
+    font-size:13px;
+    color:var(--ink-3);
+  }
+  .filters{display:flex;gap:8px;flex-wrap:wrap;}
+  .filter-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-2);
+    padding:8px 16px;
+    border-radius:20px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .filter-btn:hover{border-color:var(--rose);color:var(--ink);}
+  .filter-btn.active{background:var(--rose);border-color:var(--rose);color:#231208;}
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .kpi{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .kpi .label{font-size:11.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+  .kpi .value{font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:var(--ink);}
+  .kpi .value span{font-size:14px;color:var(--ink-3);font-family:'Inter',sans-serif;margin-left:2px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:1.1fr 1.3fr 1.6fr;
+    gap:16px;
+    margin-bottom:16px;
+  }
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.4fr;
+    gap:16px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px 12px;
+    min-width:0;
+  }
+  .card h3{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:15px;
+    margin:0 0 12px 0;
+    color:var(--ink);
+  }
+  .chart-box{position:relative;width:100%;}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px;font-size:11.5px;color:var(--ink-2);}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .swatch{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead th{
+    text-align:left;
+    color:var(--ink-3);
+    font-weight:500;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    padding:6px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  thead th.num{text-align:center;}
+  tbody td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--ink-2);}
+  tbody td.num{text-align:center;color:var(--ink);}
+  tbody tr:hover{background:var(--panel-2);}
+  tfoot td{padding:7px 8px;font-weight:600;color:var(--ink);border-top:1px solid var(--line);}
+  tfoot td.num{text-align:center;}
+  .rolecol{color:var(--ink);}
+
+  .foot-note{
+    margin-top:6px;
+    font-size:11px;
+    color:var(--ink-3);
+    text-align:right;
+  }
+  .empty{
+    padding:30px 0;
+    text-align:center;
+    color:var(--ink-3);
+    font-size:13px;
+  }
+  @media (max-width:980px){
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .grid,.grid2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Lumière Beauty &amp; Wellness — Attrition Analytics</h1>
+      <p>FY2026 · Salon, spa &amp; wellness workforce · click a location line to filter every panel</p>
+    </div>
+    <div class="filters" id="filterRow"></div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Attrition by education</h3>
+      <div class="legend" id="eduLegend"></div>
+      <div class="chart-box" style="height:190px;">
+        <canvas id="eduChart" role="img" aria-label="Donut chart of attrition by education level"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Attrition by age band</h3>
+      <div class="chart-box" style="height:220px;">
+        <canvas id="ageChart" role="img" aria-label="Bar chart of attrition count by age band"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Attrition by role &amp; quarter</h3>
+      <div id="roleTableWrap"></div>
+      <div class="foot-note" id="tableNote"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Attrition by gender</h3>
+      <div class="legend" id="genderLegend"></div>
+      <div class="chart-box" style="height:190px;">
+        <canvas id="genderChart" role="img" aria-label="Bar chart comparing attrition between male and female staff"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Attrition by pay band</h3>
+      <div class="chart-box" style="height:190px;">
+        <canvas id="payChart" role="img" aria-label="Horizontal bar chart of attrition count by pay band"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Monthly attrition trend</h3>
+      <div class="chart-box" style="height:190px;">
+        <canvas id="trendChart" role="img" aria-label="Line chart of attrition count by month across the fiscal year"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const RECORDS = [
+{d:"Hair Studio",r:"Stylist",a:"18-25",g:"Female",e:"Diploma",p:"25k-35k",m:"Apr",t:1.2},
+{d:"Hair Studio",r:"Stylist",a:"26-35",g:"Female",e:"Bachelors",p:"35k-45k",m:"Jun",t:2.1},
+{d:"Hair Studio",r:"Stylist",a:"26-35",g:"Male",e:"Diploma",p:"25k-35k",m:"Jun",t:1.8},
+{d:"Hair Studio",r:"Stylist",a:"18-25",g:"Female",e:"Diploma",p:"Upto 25k",m:"Feb",t:0.6},
+{d:"Hair Studio",r:"Senior Stylist",a:"36-45",g:"Male",e:"Bachelors",p:"45k+",m:"Sep",t:4.4},
+{d:"Hair Studio",r:"Colour Specialist",a:"26-35",g:"Female",e:"Bachelors",p:"35k-45k",m:"Nov",t:2.9},
+{d:"Hair Studio",r:"Colour Specialist",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Mar",t:1.5},
+{d:"Hair Studio",r:"Salon Manager",a:"36-45",g:"Female",e:"Masters",p:"45k+",m:"Dec",t:5.2},
+{d:"Hair Studio",r:"Stylist",a:"46-55",g:"Male",e:"Diploma",p:"25k-35k",m:"Jul",t:6.1},
+{d:"Hair Studio",r:"Front Desk",a:"18-25",g:"Female",e:"Higher Secondary",p:"Upto 25k",m:"Jan",t:0.9},
+{d:"Hair Studio",r:"Front Desk",a:"18-25",g:"Female",e:"Diploma",p:"Upto 25k",m:"May",t:1.1},
+{d:"Hair Studio",r:"Stylist",a:"26-35",g:"Male",e:"Diploma",p:"25k-35k",m:"Aug",t:2.3},
+
+{d:"Spa & Massage",r:"Massage Therapist",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Jun",t:1.9},
+{d:"Spa & Massage",r:"Massage Therapist",a:"26-35",g:"Male",e:"Diploma",p:"25k-35k",m:"Apr",t:1.4},
+{d:"Spa & Massage",r:"Massage Therapist",a:"36-45",g:"Female",e:"Bachelors",p:"35k-45k",m:"Oct",t:3.6},
+{d:"Spa & Massage",r:"Senior Therapist",a:"36-45",g:"Female",e:"Bachelors",p:"45k+",m:"Nov",t:4.8},
+{d:"Spa & Massage",r:"Wellness Consultant",a:"26-35",g:"Female",e:"Masters",p:"35k-45k",m:"Sep",t:2.7},
+{d:"Spa & Massage",r:"Massage Therapist",a:"18-25",g:"Female",e:"Diploma",p:"Upto 25k",m:"Feb",t:0.5},
+{d:"Spa & Massage",r:"Spa Manager",a:"46-55",g:"Male",e:"Masters",p:"45k+",m:"Dec",t:7.0},
+{d:"Spa & Massage",r:"Massage Therapist",a:"26-35",g:"Male",e:"Diploma",p:"25k-35k",m:"Jul",t:2.0},
+{d:"Spa & Massage",r:"Receptionist",a:"18-25",g:"Female",e:"Higher Secondary",p:"Upto 25k",m:"Mar",t:0.8},
+{d:"Spa & Massage",r:"Massage Therapist",a:"55+",g:"Female",e:"Diploma",p:"35k-45k",m:"Jan",t:9.5},
+
+{d:"Skincare & Facial",r:"Esthetician",a:"18-25",g:"Female",e:"Diploma",p:"25k-35k",m:"May",t:1.0},
+{d:"Skincare & Facial",r:"Esthetician",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Jun",t:1.7},
+{d:"Skincare & Facial",r:"Esthetician",a:"26-35",g:"Female",e:"Bachelors",p:"35k-45k",m:"Aug",t:2.4},
+{d:"Skincare & Facial",r:"Senior Esthetician",a:"36-45",g:"Female",e:"Bachelors",p:"45k+",m:"Oct",t:4.1},
+{d:"Skincare & Facial",r:"Skin Consultant",a:"26-35",g:"Female",e:"Masters",p:"35k-45k",m:"Nov",t:2.6},
+{d:"Skincare & Facial",r:"Esthetician",a:"18-25",g:"Male",e:"Diploma",p:"Upto 25k",m:"Feb",t:0.7},
+{d:"Skincare & Facial",r:"Studio Lead",a:"36-45",g:"Female",e:"Masters",p:"45k+",m:"Dec",t:5.5},
+{d:"Skincare & Facial",r:"Esthetician",a:"46-55",g:"Female",e:"Diploma",p:"25k-35k",m:"Sep",t:6.3},
+{d:"Skincare & Facial",r:"Receptionist",a:"18-25",g:"Female",e:"Higher Secondary",p:"Upto 25k",m:"Apr",t:0.9},
+{d:"Skincare & Facial",r:"Esthetician",a:"26-35",g:"Male",e:"Diploma",p:"25k-35k",m:"Jul",t:1.6},
+
+{d:"Nail Bar",r:"Nail Technician",a:"18-25",g:"Female",e:"Diploma",p:"Upto 25k",m:"Mar",t:0.8},
+{d:"Nail Bar",r:"Nail Technician",a:"18-25",g:"Female",e:"Higher Secondary",p:"Upto 25k",m:"Apr",t:0.6},
+{d:"Nail Bar",r:"Nail Technician",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Jun",t:1.9},
+{d:"Nail Bar",r:"Senior Nail Artist",a:"26-35",g:"Female",e:"Bachelors",p:"35k-45k",m:"Sep",t:3.0},
+{d:"Nail Bar",r:"Nail Technician",a:"18-25",g:"Male",e:"Diploma",p:"Upto 25k",m:"Feb",t:0.5},
+{d:"Nail Bar",r:"Nail Bar Lead",a:"36-45",g:"Female",e:"Bachelors",p:"45k+",m:"Nov",t:4.6},
+{d:"Nail Bar",r:"Nail Technician",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"May",t:1.3},
+{d:"Nail Bar",r:"Receptionist",a:"18-25",g:"Female",e:"Higher Secondary",p:"Upto 25k",m:"Jan",t:0.9},
+{d:"Nail Bar",r:"Nail Technician",a:"46-55",g:"Male",e:"Diploma",p:"25k-35k",m:"Aug",t:5.8},
+
+{d:"Hair Studio",r:"Colour Specialist",a:"18-25",g:"Male",e:"Diploma",p:"Upto 25k",m:"Oct",t:0.4},
+{d:"Spa & Massage",r:"Massage Therapist",a:"36-45",g:"Male",e:"Diploma",p:"35k-45k",m:"May",t:3.2},
+{d:"Skincare & Facial",r:"Esthetician",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Jan",t:1.8},
+{d:"Nail Bar",r:"Nail Technician",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Dec",t:2.2},
+{d:"Hair Studio",r:"Front Desk",a:"26-35",g:"Female",e:"Diploma",p:"25k-35k",m:"Jun",t:1.5},
+{d:"Spa & Massage",r:"Wellness Consultant",a:"18-25",g:"Female",e:"Bachelors",p:"25k-35k",m:"Mar",t:0.7},
+{d:"Skincare & Facial",r:"Senior Esthetician",a:"46-55",g:"Female",e:"Masters",p:"45k+",m:"Jul",t:8.2},
+{d:"Nail Bar",r:"Senior Nail Artist",a:"36-45",g:"Female",e:"Bachelors",p:"35k-45k",m:"Sep",t:3.9}
+];
+
+const MONTH_ORDER = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const AGE_ORDER = ["18-25","26-35","36-45","46-55","55+"];
+const PAY_ORDER = ["Upto 25k","25k-35k","35k-45k","45k+"];
+const EDU_ORDER = ["Higher Secondary","Diploma","Bachelors","Masters"];
+const DEPARTMENTS = ["Hair Studio","Spa & Massage","Skincare & Facial","Nail Bar"];
+
+const COLORS = {rose:'#E08B5E', sage:'#5FB3A3', gold:'#E7C15C', roseLine:'#E08B5E', ink3:'#6F8F8B', ink2:'#A9C4C1', grid:'#243B3F'};
+
+let activeDept = "All";
+let charts = {};
+
+function fmtINR(n){ return '₹' + Math.round(n).toLocaleString('en-IN') + 'k'; }
+
+function filtered(){
+  return activeDept === "All" ? RECORDS : RECORDS.filter(r => r.d === activeDept);
+}
+
+function payMid(band){
+  if(band==="Upto 25k") return 20;
+  if(band==="25k-35k") return 30;
+  if(band==="35k-45k") return 40;
+  return 50;
+}
+function ageMid(band){
+  if(band==="18-25") return 21.5;
+  if(band==="26-35") return 30.5;
+  if(band==="36-45") return 40.5;
+  if(band==="46-55") return 50.5;
+  return 58;
+}
+
+function buildFilters(){
+  const row = document.getElementById('filterRow');
+  row.innerHTML = "";
+  ["All", ...DEPARTMENTS].forEach(dep=>{
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (dep===activeDept ? ' active' : '');
+    btn.textContent = dep;
+    btn.onclick = () => { activeDept = dep; render(); };
+    row.appendChild(btn);
+  });
+}
+
+function renderKPIs(data){
+  const total = data.length;
+  const avgSal = data.reduce((s,r)=>s+payMid(r.p),0)/(total||1);
+  const avgAge = data.reduce((s,r)=>s+ageMid(r.a),0)/(total||1);
+  const avgTenure = data.reduce((s,r)=>s+r.t,0)/(total||1);
+  const rate = (total/220*100);
+  const kpis = [
+    {label:'Attrition', value: total, unit:''},
+    {label:'Attrition rate', value: rate.toFixed(1), unit:'%'},
+    {label:'Avg pay band', value: fmtINR(avgSal), unit:''},
+    {label:'Avg age', value: Math.round(avgAge), unit:'yrs'},
+    {label:'Avg tenure', value: avgTenure.toFixed(1), unit:'yrs'}
+  ];
+  const row = document.getElementById('kpiRow');
+  row.innerHTML = "";
+  kpis.forEach(k=>{
+    const div = document.createElement('div');
+    div.className = 'kpi';
+    div.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}<span>${k.unit}</span></div>`;
+    row.appendChild(div);
+  });
+}
+
+function countBy(data, key, order){
+  const map = {};
+  order.forEach(o=>map[o]=0);
+  data.forEach(r=>{ map[r[key]] = (map[r[key]]||0)+1; });
+  return order.map(o=>map[o]||0);
+}
+
+function destroy(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+function renderEdu(data){
+  destroy('edu');
+  const counts = countBy(data,'e',EDU_ORDER);
+  const total = counts.reduce((a,b)=>a+b,0) || 1;
+  const palette = [COLORS.sage, COLORS.rose, COLORS.gold, '#A98FB0'];
+  const legend = document.getElementById('eduLegend');
+  legend.innerHTML = EDU_ORDER.map((e,i)=>`<span><span class="swatch" style="background:${palette[i]}"></span>${e} ${counts[i]}</span>`).join('');
+  const ctx = document.getElementById('eduChart');
+  charts.edu = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:EDU_ORDER, datasets:[{ data:counts, backgroundColor:palette, borderColor: '#14262A', borderWidth:3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label:(c)=> `${c.label}: ${c.raw} (${Math.round(c.raw/total*100)}%)` } }
+      }
+    }
+  });
+}
+
+function renderAge(data){
+  destroy('age');
+  const counts = countBy(data,'a',AGE_ORDER);
+  const ctx = document.getElementById('ageChart');
+  charts.age = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:AGE_ORDER, datasets:[{ data:counts, backgroundColor: COLORS.rose, borderRadius:4, maxBarThickness:34 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{enabled:true} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:COLORS.ink3, font:{size:11}} },
+        y:{ grid:{color:COLORS.grid}, ticks:{color:COLORS.ink3, font:{size:11}, precision:0} }
+      }
+    }
+  });
+}
+
+function renderGender(data){
+  destroy('gender');
+  const female = data.filter(r=>r.g==='Female').length;
+  const male = data.filter(r=>r.g==='Male').length;
+  const legend = document.getElementById('genderLegend');
+  legend.innerHTML = `<span><span class="swatch" style="background:${COLORS.rose}"></span>Female ${female}</span><span><span class="swatch" style="background:${COLORS.sage}"></span>Male ${male}</span>`;
+  const ctx = document.getElementById('genderChart');
+  charts.gender = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:['Female','Male'], datasets:[{ data:[female,male], backgroundColor:[COLORS.rose, COLORS.sage], borderRadius:4, maxBarThickness:48 }] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{color:COLORS.grid}, ticks:{color:COLORS.ink3, font:{size:11}, precision:0} },
+        y:{ grid:{display:false}, ticks:{color:COLORS.ink2 || COLORS.ink3, font:{size:12}} }
+      }
+    }
+  });
+}
+
+function renderPay(data){
+  destroy('pay');
+  const counts = countBy(data,'p',PAY_ORDER);
+  const ctx = document.getElementById('payChart');
+  charts.pay = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:PAY_ORDER, datasets:[{ data:counts, backgroundColor: COLORS.gold, borderRadius:4, maxBarThickness:22 }] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{color:COLORS.grid}, ticks:{color:COLORS.ink3, font:{size:11}, precision:0} },
+        y:{ grid:{display:false}, ticks:{color:COLORS.ink3, font:{size:11}} }
+      }
+    }
+  });
+}
+
+function renderTrend(data){
+  destroy('trend');
+  const map = {}; MONTH_ORDER.forEach(m=>map[m]=0);
+  data.forEach(r=>{ map[r.m] = (map[r.m]||0)+1; });
+  const counts = MONTH_ORDER.map(m=>map[m]);
+  const ctx = document.getElementById('trendChart');
+  charts.trend = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:MONTH_ORDER,
+      datasets:[{
+        data:counts, borderColor:COLORS.rose, backgroundColor:'rgba(206,142,122,0.14)',
+        fill:true, tension:0.35, pointRadius:3, pointBackgroundColor:COLORS.rose, borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:COLORS.ink3, font:{size:10}, maxRotation:0, autoSkip:false} },
+        y:{ grid:{color:COLORS.grid}, ticks:{color:COLORS.ink3, font:{size:11}, precision:0} }
+      }
+    }
+  });
+}
+
+function renderTable(data){
+  const roles = [...new Set(data.map(r=>r.r))].sort();
+  const wrap = document.getElementById('roleTableWrap');
+  if(roles.length === 0){
+    wrap.innerHTML = '<div class="empty">No attrition records for this selection.</div>';
+    document.getElementById('tableNote').textContent = '';
+    return;
+  }
+  const qOf = m => Math.floor(MONTH_ORDER.indexOf(m)/3);
+  let rows = "";
+  let colTotals = [0,0,0,0];
+  let grand = 0;
+  roles.forEach(role=>{
+    const recs = data.filter(r=>r.r===role);
+    const qCounts = [0,0,0,0];
+    recs.forEach(r=> qCounts[qOf(r.m)]++ );
+    const rowTotal = qCounts.reduce((a,b)=>a+b,0);
+    qCounts.forEach((v,i)=>colTotals[i]+=v);
+    grand += rowTotal;
+    rows += `<tr><td class="rolecol">${role}</td>${qCounts.map(v=>`<td class="num">${v}</td>`).join('')}<td class="num" style="color:var(--gold);font-weight:600">${rowTotal}</td></tr>`;
+  });
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>Role</th><th class="num">Q1</th><th class="num">Q2</th><th class="num">Q3</th><th class="num">Q4</th><th class="num">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Total</td>${colTotals.map(v=>`<td class="num">${v}</td>`).join('')}<td class="num">${grand}</td></tr></tfoot>
+    </table>`;
+  document.getElementById('tableNote').textContent = `${roles.length} role${roles.length===1?'':'s'} affected · ${activeDept}`;
+}
+
+function render(){
+  buildFilters();
+  const data = filtered();
+  renderKPIs(data);
+  if(data.length === 0){
+    ['edu','age','gender','pay','trend'].forEach(destroy);
+    renderTable(data);
+    return;
+  }
+  renderEdu(data);
+  renderAge(data);
+  renderGender(data);
+  renderPay(data);
+  renderTrend(data);
+  renderTable(data);
+}
+
+render();
+</script>
+</body>
+</html>
